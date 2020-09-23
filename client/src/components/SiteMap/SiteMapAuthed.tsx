@@ -21,7 +21,7 @@ export default ({token}: PropsType) => {
   const [trigger, actTrigger] = useState<string>('')
 
   useEffect(() => {
-    const socket = io(`https://${window.document.location.hostname}:80?token=${token}&userId=${userId}`)
+    const socket = io(`https://${window.document.location.hostname}:443?token=${token}&userId=${userId}`)
     socket.on(
       'messageForYou',
       async ({id, message}: {id: string; message: any}) => {
