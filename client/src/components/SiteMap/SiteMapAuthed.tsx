@@ -20,9 +20,8 @@ export default ({token}: PropsType) => {
   const {userId} = useContext(AuthContext)
   const [trigger, actTrigger] = useState<string>('')
 
-  // ${window.document.location.host}:80
   useEffect(() => {
-    const socket = io(`http://${window.document.location.host}:80?token=${token}&userId=${userId}`)
+    const socket = io(`https://${window.document.location.hostname}:80?token=${token}&userId=${userId}`)
     socket.on(
       'messageForYou',
       async ({id, message}: {id: string; message: any}) => {

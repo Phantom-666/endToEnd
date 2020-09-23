@@ -1,9 +1,21 @@
 import express from 'express'
-import {createServer} from 'http'
+import { readFileSync } from 'fs'
+import http from 'http'
+import https from 'https'
+import { resolve } from 'path'
 import ioSocket from 'socket.io'
+const privatePath = resolve(__dirname, '..', '..', 'ssl', 'private.key')
+const certPath = resolve(__dirname, '..', '..', 'ssl', 'cert.crt')
+
+
+const options = {
+  key: readFileSync(privatePath),
+  cert: readFileSync(certPath),
+}
 const app = express()
-const server = createServer(app)
-const io = ioSocket(server)
+const server = http.createServer(app)
+const serverHttps = https.createServer(options, app)
+const io = ioSocket(serverHttps)
 
 type OnlineUsers = {
   id: string
@@ -52,4 +64,4 @@ io.sockets.on('connection', (socket) => {
   })
 })
 
-export {app, server, onlineUsers}
+export {app, server, serverHttps, onlineUsers}
