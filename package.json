@@ -1,0 +1,20 @@
+{
+  "name": "endtoend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "sudo cross-env NODE_ENV=production npm start --prefix server",
+    "dev": "sudo npm run prepare",
+    "install": "npm i --prefix client; npm i --prefix server",
+    "build": "npm run build --prefix client; npm run build --prefix server",
+    "prepare": " concurrently \" npm run dev --prefix server\" \" npm start --prefix client\" "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "client": "file:client",
+    "prefix": "^1.0.0"
+  }
+}
