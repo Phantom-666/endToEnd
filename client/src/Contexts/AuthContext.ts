@@ -7,7 +7,6 @@ type AuthContextType = {
   userId : string | null,
   loginUser : string | null,
   userImage : string | null,
-  generateNewKeys : () => void,
 }
 
 export default createContext({} as AuthContextType)

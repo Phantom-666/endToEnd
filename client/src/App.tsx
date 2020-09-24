@@ -15,7 +15,6 @@ export default () => {
     ready,
     loginUser,
     userImage,
-    generateNewKeys,
   } = AuthHook()
   const isToken = !!token
   const route = Router({isToken, token})
@@ -41,7 +40,6 @@ export default () => {
           userId,
           loginUser,
           userImage,
-          generateNewKeys,
         }}
       >
         <BrowserRouter>{route}</BrowserRouter>

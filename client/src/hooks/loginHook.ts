@@ -19,7 +19,7 @@ export const AuthHook = () => {
     setUserId(id)
     setLoginUser(logUser)
     setUserImage(image)
-    generateNewKeys()
+    generateNewKeys(jwt)
     localStorage.setItem(
       storageName,
       JSON.stringify({
@@ -42,14 +42,16 @@ export const AuthHook = () => {
     clearLocalStorageMessages()
   }, [])
 
-  const generateNewKeys = useCallback(async () => {
+  const generateNewKeys = useCallback(async (token) => {
     try {
       const privateKeyStorage = localStorage.getItem(PrivateName)
       if (!privateKeyStorage) {
         console.log('keys were generated')
 
         const {publicKey, privateKey} = await generateExportedKeys()
-        await axios.post('/api/setpublickey', {publicKey})
+        await axios.post('/api/setpublickey', {publicKey}, {headers : {
+          token
+        }})
         localStorage.setItem(PrivateName, JSON.stringify({privateKey}))
       }
     } catch (e) {
@@ -64,7 +66,7 @@ export const AuthHook = () => {
       axios.defaults.headers.token = data.jwtToken
       login(data.jwtToken, data.userId, data.login, data.image)
 
-      generateNewKeys()
+      generateNewKeys(data.jwtToken)
     }
 
     setReady(true)
@@ -78,6 +80,5 @@ export const AuthHook = () => {
     ready,
     loginUser,
     userImage,
-    generateNewKeys,
   }
 }
