@@ -2,6 +2,7 @@ import {useState, useCallback, useEffect} from 'react'
 import {generateExportedKeys} from '../Functions/Encode'
 import axios from 'axios'
 import { SocketEmmiter } from '../components/Emitter/SocketEmitter'
+import { clearLocalStorageMessages } from '../Functions/ClearLocalStorage'
 
 const storageName = 'userData'
 const PrivateName = 'private'
@@ -38,6 +39,7 @@ export const AuthHook = () => {
     SocketEmmiter.emit('disconnect')
     localStorage.removeItem(storageName)
     localStorage.removeItem(PrivateName)
+    clearLocalStorageMessages()
   }, [])
 
   const generateNewKeys = useCallback(async () => {
