@@ -1,15 +1,14 @@
-import React, { useEffect, useContext, useState } from "react"
+import React, { useEffect, useContext } from "react"
 import { useHistory } from "react-router-dom"
 import AuthContext from "../../Contexts/AuthContext"
 import LiItems from "./LiItems"
 
 type PropsType = {
-    name : string
+  name: string
 }
 
 export default (props: PropsType) => {
   const history = useHistory()
-  const [backArrow, setBackArror] = useState(false)
 
   const goHome = () => {
     history.goBack()
@@ -18,12 +17,12 @@ export default (props: PropsType) => {
     window.M.Sidenav.init(document.querySelectorAll(".sidenav"))
   }, [])
 
-  useEffect(() => {
-    if (window.document.location.pathname !== '/main') {
-      return setBackArror(true)
-    }
-    return setBackArror(false)
-  }, [])
+  // useEffect(() => {
+  //   if (window.document.location.pathname !== "/main") {
+  //     return setBackArror(true)
+  //   }
+  //   return setBackArror(false)
+  // }, [])
 
   const { loginUser, userId, userImage } = useContext(AuthContext)
 
@@ -31,12 +30,15 @@ export default (props: PropsType) => {
     <>
       <div className="navbar-fixed">
         <nav>
-          <div className="nav-wrapper  pink lighten-2">
-            <a href="#" className="brand-logo center">
-              {props.name ? props.name : "Messanger"}
+          <div className="nav-wrapper blue lighten-2">
+            <a
+              href="#"
+              className="brand-logo center"
+              onClick={() => history.push("/main")}
+            >
+              {props.name ? props.name : "Messenger"}
             </a>
-
-           {backArrow && <ul className="left" onClick={goHome}>
+            <ul className="left" onClick={goHome}>
               <i
                 data-target="mobile-demo"
                 className="material-icons"
@@ -44,8 +46,7 @@ export default (props: PropsType) => {
               >
                 arrow_back
               </i>
-            </ul>}
-            
+            </ul>
             <a
               href="#"
               data-target="slide-out"
@@ -63,21 +64,11 @@ export default (props: PropsType) => {
       <ul id="slide-out" className="sidenav">
         <li>
           <div className="user-view">
-            <div className="background">
-              <img
-                src="https://img2.akspic.ru/image/131890-ozero-voda-ozernyj_kraj-peyzash-prirodnyj_landshaft-2880x1800.jpg"
-                alt="logo"
-              />
-            </div>
             <a href={`/profile/${userId}`}>
-              <img
-                className="circle"
-                src={userImage!}
-                alt="logo"
-              />
+              <img className="circle" src={userImage!} alt="logo" />
             </a>
             <a href={`/profile/${userId}`}>
-              <span className="white-text name">{loginUser}</span>
+              <span className="black-text name">{loginUser}</span>
             </a>
           </div>
         </li>

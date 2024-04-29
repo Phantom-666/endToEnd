@@ -1,43 +1,40 @@
-import React, {useContext, useEffect, useState} from 'react'
-import {useParams, useHistory} from 'react-router-dom'
-import {importKey, getEncodeText} from '../../Functions/Encode'
-import axios from 'axios'
-import {SocketEmmiter} from '../Emitter/SocketEmitter'
-import Axios from 'axios'
-import {randomBytes} from 'crypto'
-import Message from './Message'
-const messageLocalStorageName = 'messages'
+import React, { useEffect, useRef, useState, useContext } from "react"
+import { useParams, useHistory } from "react-router-dom"
+import axios from "axios"
+import Message from "./Message"
+import "./Correspondence.css"
+import AuthContext from "../../Contexts/AuthContext"
+import Input from "./Input"
+import { NameType, paramsType } from "./types"
+import { useConnect } from "./useConnect"
+import { SocketEmmiter } from "../Emitter/SocketEmitter"
+import { messageLocalStorageName } from "../../config"
 
+export default ({ token }: { token: string }) => {
+  const [namePartner, setNamePartner] = useState("Loading...")
+  const [partnerImage, setPartnerImage] = useState("")
 
-export default ({trigger} : {trigger:string}) => {
-  const [nameParther, setNameParther] = useState('Loading...')
-  const [message, setMessage] = useState<string>('')
-  const [isOnline, setIsOnline] = useState(false)
   const [messages, setMessages] = useState([])
   const history = useHistory()
-  type paramsType = {
-    id: string
-  }
 
-  type NameType = {
-    data: {
-      name: string
-    }
-  }
+  // Our partner id
+  const params: paramsType = useParams()
 
-  const checkOnline = async () => {
-    try {
-      const req = await axios.post('/api/checkonlineusers', {id: params.id})
-      setIsOnline(req.data.status)
-    } catch (e) {
-      window.M.toast({html: 'Server Error'})
-    }
-  }
+  const { userId } = useContext(AuthContext)
+
+  const [trigger, isOnline] = useConnect(token, userId)
 
   useEffect(() => {
-    checkOnline()
-  }, [])
+    SocketEmmiter.emit("isOnline", { userId: params.id })
+  }, [params.id])
 
+  const messagesEndRef = useRef<null | HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, 1000)
+  }
 
   const setMessagesFromStorage = () => {
     const messages = localStorage.getItem(messageLocalStorageName)
@@ -45,24 +42,29 @@ export default ({trigger} : {trigger:string}) => {
       const messagesWithSpecificPerson = JSON.parse(messages)[params.id]
       if (messagesWithSpecificPerson) {
         setMessages(messagesWithSpecificPerson)
-      } 
+      }
     }
   }
+  useEffect(() => {
+    scrollToBottom()
+  }, [])
 
   useEffect(() => {
     setMessagesFromStorage()
   }, [trigger])
 
-  const params: paramsType = useParams()
   const takeCorrespondence = async () => {
     try {
-      const {data}: NameType = await axios.get(
-        `/api/correspondence/${params.id}`
+      const { data }: NameType = await axios.get(
+        `/api/correspondence/${params.id}`,
+        { headers: { token } }
       )
-      setNameParther(data.name)
+
+      setNamePartner(data.name)
+      setPartnerImage(data.image)
     } catch (e) {
-      window.M.toast({html: 'Server Error'})
-      history.push('/main')
+      window.M.toast({ html: "Server Error" })
+      history.push("/main")
     }
   }
 
@@ -70,74 +72,55 @@ export default ({trigger} : {trigger:string}) => {
     takeCorrespondence()
   }, [])
 
-  const messageHandler = (e: any) => setMessage(e.target.value)
-  const fail = (e: string) => window.M.toast({html: e})
+  const deleteChat = () => {
+    const messages = localStorage.getItem(messageLocalStorageName)
 
-  const submitMessage = async () => {
-    try {
-      if (!message) return fail('Enter message')
-      const publicKey = await Axios.get(`/api/getpublickey/${params.id}`)
-      const importedPublicKey = await importKey(
-        JSON.parse(publicKey.data.publicKey),
-        'encrypt'
-      )
-      const cypherText = await getEncodeText(message, importedPublicKey)
-      SocketEmmiter.emit('sendMessage', {id: params.id, message: cypherText})
-      const messagesStorage = localStorage.getItem(messageLocalStorageName)
+    if (messages) {
+      const parsed = JSON.parse(messages)
 
-      if (!messagesStorage) {
-        const newMessage = {[params.id!]: [{from : 'you', message}]}
-        localStorage.setItem(
-          messageLocalStorageName,
-          JSON.stringify(newMessage)
-        )
-      } 
-      else {
-        const messagesJSONed = JSON.parse(messagesStorage)
-        const status = messagesJSONed.hasOwnProperty(params.id)
-        if (status) {
-          messagesJSONed[params.id].push({from : 'you', message})
-        } else {
-          messagesJSONed[params.id] = [{from : 'you', message}]
-        }
-        localStorage.setItem(
-          messageLocalStorageName,
-          JSON.stringify(messagesJSONed)
-        )
+      const messagesWithSpecificPerson = parsed[params.id]
+      if (messagesWithSpecificPerson) {
+        parsed[params.id] = []
+
+        localStorage.setItem(messageLocalStorageName, JSON.stringify(parsed))
+
+        setMessages([])
       }
-      setMessagesFromStorage()
-      setMessage('')
-    } catch (e) {
-      fail('Server Error')
     }
-  }
-
-  const input = () => {
-    return (
-      <div
-        className='center'
-        style={{position: 'absolute', bottom: 0, right: '5px', left: '5px'}}
-      >
-        <input type='text' value={message} onChange={messageHandler} />
-        <button className='btn' onClick={submitMessage}>
-          Submit
-        </button>
-      </div>
-    )
   }
 
   return (
     <>
-      <div className='center'>
-        <h6>
-          {nameParther} : ${isOnline ? 'online' : 'offline'}
-          <br />
-          <br />
-
-          {messages.map((m : {message : string, from : string }) => <Message key={randomBytes(2).toString('hex')} message={m.message} from={m.from} />)}
-          {isOnline && input()}
-        </h6>
+      <div className="container">
+        <div className="main">
+          <div className="main-header">
+            <div
+              className="avatar"
+              style={{ backgroundImage: `url(${partnerImage})` }}
+            ></div>
+            <h2>{namePartner}</h2>
+            <button className="btn red" onClick={deleteChat}>
+              Delete chat
+            </button>
+          </div>
+          <div className="message-container">
+            {messages.map((msg: { message: string; from: string }, i) => (
+              <Message {...msg} key={i} />
+            ))}
+          </div>
+          <div className="container">
+            <div className="center">
+              {isOnline && (
+                <Input
+                  id={params.id}
+                  setMessagesFromStorage={setMessagesFromStorage}
+                />
+              )}
+            </div>
+          </div>
+        </div>
       </div>
+      <div style={{ float: "left", clear: "both" }} ref={messagesEndRef}></div>
     </>
   )
 }

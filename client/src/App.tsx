@@ -1,35 +1,24 @@
-import React from 'react'
-import {BrowserRouter} from 'react-router-dom'
-import AuthContext from './Contexts/AuthContext'
-import {AuthHook} from './hooks/loginHook'
-import Router from './Router'
+import React from "react"
+import { BrowserRouter } from "react-router-dom"
+import AuthContext from "./Contexts/AuthContext"
+import { AuthHook } from "./hooks/loginHook"
+import Router from "./Router"
 
-
+const Loading = () => {
+  return (
+    <>
+      <div>Loading...</div>
+    </>
+  )
+}
 
 export default () => {
-  const {
-    login,
-    logout,
-    token,
-    userId,
-    ready,
-    loginUser,
-    userImage,
-  } = AuthHook()
+  const { login, logout, token, userId, ready, loginUser, userImage } =
+    AuthHook()
   const isToken = !!token
-  const route = Router({isToken, token})
+  const route = Router({ isToken, token })
 
-  
-  if (!ready) {
-    return (
-      <>
-        <div>Loading...</div>
-      </>
-    )
-  }
-
-  
-
+  if (!ready) return <Loading />
   return (
     <>
       <AuthContext.Provider
