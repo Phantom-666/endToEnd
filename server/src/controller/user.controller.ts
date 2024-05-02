@@ -99,8 +99,6 @@ class UserController {
 
     if (!isValid) return res.status(400).json({ message: "Server Error" })
 
-    // const user = await db.findOne({ login: isValid.isUser.login })
-
     const result = []
 
     for (let i = 0; i < users.length; i++) {

@@ -19,6 +19,8 @@ export default () => {
         headers: { token },
       })
 
+      console.log("allUsers", allUsers)
+
       setUsers(allUsers.data.users)
     } catch (e) {
       window.M.toast({ html: "Server Error" })
