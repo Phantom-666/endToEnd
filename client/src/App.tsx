@@ -3,6 +3,8 @@ import { BrowserRouter } from "react-router-dom"
 import AuthContext from "./Contexts/AuthContext"
 import { AuthHook } from "./hooks/loginHook"
 import Router from "./Router"
+// TODO: change title
+// TODO: change logo
 
 const Loading = () => {
   return (
